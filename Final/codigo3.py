@@ -4,7 +4,7 @@
 Scraper rápido de Marvel Rivals:
 - Delay inicial de 10 s
 - Extrae K/D/A, daño, curación, MVP, héroe y rol
-- Perfil objetivo: player/209656717
+- Perfil objetivo: player/1639942319
 """
 
 import time
@@ -32,46 +32,18 @@ HERO_MAP = {
     "1047001": "Jeff The Land Shark", "1033001": "Black Widow"
 }
 
-# Nuevo: asignación de rol (1=Vanguard, 2=Duelist, 3=Strategist)
+# Asignación de rol (1=Vanguard, 2=Duelist, 3=Strategist)
 HERO_ROLE_MAP = {
-    "1018001": 1,  # Doctor Strange
-    "1011001": 1,  # Hulk
-    "1034001": 2,  # Iron Man
-    "1036001": 2,  # Spider Man
-    "1031001": 3,  # Luna Snow
-    "1045001": 2,  # Namor
-    "1016001": 3,  # Loki
-    "1026001": 2,  # Black Panther
-    "1029001": 2,  # Magik
-    "1023001": 3,  # Rocket Raccoon
-    "1027001": 1,  # Groot
-    "1042001": 1,  # Peni Parker
-    "1015001": 2,  # Storm
-    "1037001": 1,  # Magneto
-    "1043001": 2,  # Star Lord
-    "1020001": 3,  # Mantis
-    "1014001": 2,  # The Punisher
-    "1038001": 2,  # Scarlet Witch
-    "1024001": 2,  # Hela
-    "1035001": 1,  # Venom
-    "1046001": 3,  # Adam Warlock
-    "1047001": 3,  # Jeff The Land Shark
-    "1039001": 1,  # Thor
-    "1041001": 2,  # Winter Soldier
-    "1022001": 1,  # Captain America
-    "1048001": 2,  # Psylocke
-    "1030001": 2,  # Moon Knight
-    "1021001": 2,  # Hawkeye
-    "1032001": 2,  # Squirrel Girl
-    "1052001": 2,  # Iron Fist
-    "1033001": 2,  # Black Widow
-    "1025001": 3,  # Cloak & Dagger
-    "1049001": 2,  # Wolverine
-    "1040001": 2,  # Mister Fantastic
-    "1050001": 3,  # Invisible Woman
-    "1017001": 2,  # Human Torch
-    "1051001": 1,  # The Thing
-    "1053001": 1   # Emma Frost
+    "1018001": 1, "1011001": 1, "1034001": 2, "1036001": 2,
+    "1031001": 3, "1045001": 2, "1016001": 3, "1026001": 2,
+    "1029001": 2, "1023001": 3, "1027001": 1, "1042001": 1,
+    "1015001": 2, "1037001": 1, "1043001": 2, "1020001": 3,
+    "1014001": 2, "1038001": 2, "1024001": 2, "1035001": 1,
+    "1046001": 3, "1047001": 3, "1039001": 1, "1041001": 2,
+    "1022001": 1, "1048001": 2, "1030001": 2, "1021001": 2,
+    "1032001": 2, "1052001": 2, "1033001": 2, "1025001": 3,
+    "1049001": 2, "1040001": 2, "1050001": 3, "1017001": 2,
+    "1051001": 1, "1053001": 1
 }
 
 def save_to_csv(data, filename='rivals_data.csv'):
@@ -98,7 +70,6 @@ def scrape_player(player_id: str):
     try:
         print("[+] Abriendo página:", url)
         driver.get(url)
-
         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.matches")))
         print("[+] Contenedor 'matches' cargado.")
         
@@ -117,10 +88,9 @@ def scrape_player(player_id: str):
             driver.execute_script("arguments[0].scrollIntoView(true);", match)
             time.sleep(0.1)
 
-            # Intentar expandir partida
             try:
-                btn_expand = match.find_element(By.CSS_SELECTOR, "a.match .link-ind")
-                btn_expand.click()
+                btn = match.find_element(By.CSS_SELECTOR, "a.match .link-ind")
+                btn.click()
                 wait.until(EC.presence_of_element_located((
                     By.CSS_SELECTOR,
                     f"div.matches > div.match-details:nth-child({idx}) tr"
@@ -143,24 +113,20 @@ def scrape_player(player_id: str):
                     heal      = int(row.find_element(By.CSS_SELECTOR, ".stat-value.heal .text")
                                     .text.replace(",", ""))
 
-                    # MVP/SVP flag
                     try:
                         row.find_element(By.CSS_SELECTOR, ".badges .mvp, .badges .svp")
                         mvp_flag = True
                     except NoSuchElementException:
                         mvp_flag = False
 
-                    # Hero info
                     try:
-                        hero_img = row.find_element(By.CSS_SELECTOR, ".hero img")
-                        src = hero_img.get_attribute("src")
-                        hero_id = src.split("img_selecthero_")[-1].split(".")[0]
+                        img = row.find_element(By.CSS_SELECTOR, ".hero img").get_attribute("src")
+                        hero_id = img.split("img_selecthero_")[-1].split(".")[0]
                         hero_name = HERO_MAP.get(hero_id, "Desconocido")
                     except Exception:
                         hero_id = None
                         hero_name = "Desconocido"
 
-                    # Nuevo: asignación de rol
                     role_code = HERO_ROLE_MAP.get(hero_id, 0)
 
                     entry = {
@@ -189,4 +155,4 @@ def scrape_player(player_id: str):
         print("[*] Terminado.")
 
 if __name__ == "__main__":
-    scrape_player("209656717")
+    scrape_player("1639942319")
